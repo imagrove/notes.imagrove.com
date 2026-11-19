@@ -1,0 +1,68 @@
+# 站点根地址：结尾这个斜杠不能少，少了页面能开但样式全丢
+baseURL = "https://notes.imagrove.com/"
+title = "嵌入式入门手记"
+theme = "PaperMod"
+
+languageCode = "zh-cn"
+defaultContentLanguage = "zh"
+hasCJKLanguage = true
+enableRobotsTXT = true
+
+# 首页每页显示的文章数
+[pagination]
+  pagerSize = 20
+
+[params]
+  description = "从 Arduino 到 ESP32，再到 PlatformIO 与 ESP-IDF：一个人从零学嵌入式的真实记录。"
+  author = "Imagrove 硬件团队"
+  defaultTheme = "auto"
+
+  # 文章页显示哪些信息：写文章的人不用管这些，模板统一控制
+  ShowReadingTime = true
+  ShowWordCount = true
+  ShowCodeCopyButtons = true
+  ShowPostNavLinks = true
+  ShowToc = true
+  TocOpen = false
+  ShowBreadCrumbs = false
+  ShowShareButtons = false
+
+  [params.homeInfoParams]
+    Title = "从零到固件"
+    Content = "一个人把嵌入式学明白的全过程。Arduino、ESP32、PlatformIO、ESP-IDF，包括每一个真实的坑。"
+
+# 顶部导航：改这里等于改全站菜单
+[[menu.main]]
+  identifier = "posts"
+  name = "文章"
+  url = "/posts/"
+  weight = 10
+
+[[menu.main]]
+  identifier = "archives"
+  name = "归档"
+  url = "/archives/"
+  weight = 20
+
+[[menu.main]]
+  identifier = "tags"
+  name = "标签"
+  url = "/tags/"
+  weight = 30
+
+[[menu.main]]
+  identifier = "about"
+  name = "关于"
+  url = "/about/"
+  weight = 40
+
+[markup]
+  # 允许文章里直接写 HTML（比如加个 <div> 做提示框）
+  [markup.goldmark.renderer]
+    unsafe = true
+  [markup.highlight]
+    noClasses = false
+
+[taxonomies]
+  tag = "tags"
+  category = "categories"

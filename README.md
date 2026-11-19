@@ -168,20 +168,23 @@ hugo server -D          # -D 表示连草稿一起显示
 
 ---
 
-## 管理员：首次部署（只做一次）
+## 管理员：部署配置（已做完，别重复操作）
 
-1. 建仓库 `imagrove/notes.imagrove.com`，**Public**（Pages 对 public 仓库免费）
-2. 把本目录内容推上去
-3. 仓库 **Settings → Pages**：
-   - **Source 必须选 `GitHub Actions`**（默认是 `Deploy from a branch`，选它 Hugo 不会被编译，你只会看到一个空页面）
-   - Custom domain 填 `notes.imagrove.com`
-4. 在 Cloudflare 的 `imagrove.com` zone 加记录：
-   - 类型 `CNAME`，名称 `notes`，内容 `imagrove.github.io`
-   - **先不要开橙云**（代理），等 Pages 那边证书签发成功再考虑
-5. 回 Pages 页面勾选 **Enforce HTTPS**
-6. 加协作者：Settings → Collaborators，把实习生拉进来，给 **Write** 权限
+2026-11-19 首次部署完成，当前真实状态：
 
-之后他提交，GitHub 自动构建发布，你不用管。
+| 项 | 状态 |
+| :--- | :--- |
+| 仓库 `imagrove/notes.imagrove.com`（Public） | ✅ 已建 |
+| Settings → Pages → Source = `GitHub Actions` | ✅ 已设（`build_type: workflow`） |
+| Pages 自定义域名 | ✅ 已登记 `notes.imagrove.com` |
+| DNS 解析 | ✅ 已加，在**阿里云**（不在 Cloudflare）：`CNAME notes → imagrove.github.io`，TTL 600 |
+| 构建与线上访问 | ✅ 全路由 200，样式正常 |
+| **Enforce HTTPS** | ⚠️ **未勾** —— 证书刚在下发，勾选会报 `The certificate does not exist yet`。等十几分钟后重试即可 |
+| 协作者（实习生 Write 权限） | ⚠️ 待加 |
+
+要改域名时，四处必须同步（缺一会出现页面能开但链接跳回旧域名）：`hugo.toml` 的 `baseURL`（结尾斜杠不能少）、`static/CNAME`、Pages 面板的 Custom domain、DNS 记录。改完重跑一次构建，确认产物里 `rel=canonical` 已是新域名。
+
+> 阿里云云解析本身不做代理，所以没有橙云/灰云开关。但这个 zone 将来要迁 Cloudflare（NS 现在还指向 `dns13/dns14.hichina.com`），**迁过去时 `notes` 这条必须保持灰云（仅 DNS）**：橙云会代理回源 `imagrove.github.io`，然后被 301 跳到 `notes.imagrove.com` 形成绕圈，页面直接坏。
 
 **可选**：Settings → Secrets → `GUARD_KEYWORDS` 填客户名/项目代号（英文逗号分隔），护栏会额外扫这些词。
 

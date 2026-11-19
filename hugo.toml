@@ -14,7 +14,7 @@ enableRobotsTXT = true
 
 [params]
   description = "从 Arduino 到 ESP32，再到 PlatformIO 与 ESP-IDF：一个人从零学嵌入式的真实记录。"
-  author = "Imagrove 硬件团队"
+  author = "吕绪帆"
   defaultTheme = "auto"
 
   # 文章页显示哪些信息：写文章的人不用管这些，模板统一控制

@@ -77,13 +77,21 @@ scan "私钥内容" \
      'BEGIN (RSA |EC |OPENSSH |PGP |DSA )?PRIVATE KEY'
 
 # ── 7. 客户名 / 项目代号词库（来自 Secrets 或本地环境变量）
+# 词库走字面量匹配（-F）且忽略大小写（-i），不进 scan()：
+# 客户名里的 . ( ) + & 若当正则解释会乱命中，而人名大小写混着写很常见。
 if [ -n "${GUARD_KEYWORDS:-}" ]; then
   WORDS=$(printf '%s' "$GUARD_KEYWORDS" | sed 's/，/,/g')
   IFS=',' read -ra ARR <<< "$WORDS"
   for w in "${ARR[@]}"; do
     w=$(printf '%s' "$w" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
     [ -z "$w" ] && continue
-    scan "客户/内部关键词：$w" "$w"
+    out=$(grep -rniF --include='*.md' -- "$w" "$SCAN_DIR" 2>/dev/null | grep -v 'guard-allow' || true)
+    if [ -n "$out" ]; then
+      echo ""
+      echo "❌ 客户/内部关键词（字面量）：$w"
+      printf '%s\n' "$out" | head -n 20
+      HITS=$((HITS + $(printf '%s\n' "$out" | wc -l)))
+    fi
   done
 else
   echo "::warning::GUARD_KEYWORDS 未配置，客户名库扫描已跳过"

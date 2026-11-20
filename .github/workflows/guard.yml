@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   scan:
-    name: 扫描 src/content/docs
+    name: 扫描 content/posts
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

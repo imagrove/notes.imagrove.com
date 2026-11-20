@@ -1,6 +1,6 @@
 # 嵌入式入门手记
 
-`https://notes.imagrove.com` · 维护人：吕绪帆（Imagrove 硬件团队）
+`https://notes.imagrove.com` · 维护人：吕绪帆（Imagrove 硬件团队成员）
 
 这是一个博客。你写一篇 Markdown，`git push`，一分钟后就出现在网站上。
 

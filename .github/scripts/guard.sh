@@ -79,18 +79,21 @@ scan "私钥内容" \
 # ── 7. 客户名 / 项目代号词库（来自 Secrets 或本地环境变量）
 # 词库走字面量匹配（-F）且忽略大小写（-i），不进 scan()：
 # 客户名里的 . ( ) + & 若当正则解释会乱命中，而人名大小写混着写很常见。
+# 词库命中不适用 guard-allow 豁免（故此处不过滤）：
+# 豁免只让扫描闭眼，那个词依旧会出现在页面正文和 RSS 里，等于白脱敏。
+KW_HITS=0
 if [ -n "${GUARD_KEYWORDS:-}" ]; then
   WORDS=$(printf '%s' "$GUARD_KEYWORDS" | sed 's/，/,/g')
   IFS=',' read -ra ARR <<< "$WORDS"
   for w in "${ARR[@]}"; do
     w=$(printf '%s' "$w" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
     [ -z "$w" ] && continue
-    out=$(grep -rniF --include='*.md' -- "$w" "$SCAN_DIR" 2>/dev/null | grep -v 'guard-allow' || true)
+    out=$(grep -rniF --include='*.md' -- "$w" "$SCAN_DIR" 2>/dev/null || true)
     if [ -n "$out" ]; then
       echo ""
-      echo "❌ 客户/内部关键词（字面量）：$w"
+      echo "❌ 客户名/内部代号（字面量命中，无豁免通道）：$w"
       printf '%s\n' "$out" | head -n 20
-      HITS=$((HITS + $(printf '%s\n' "$out" | wc -l)))
+      KW_HITS=$((KW_HITS + $(printf '%s\n' "$out" | wc -l)))
     fi
   done
 else
@@ -99,8 +102,22 @@ fi
 
 echo ""
 echo "────────────────────────────────────────────"
-if [ "$HITS" -gt 0 ]; then
-  echo "::error::发现 $HITS 处疑似敏感信息。确属教学示例的，在该行末尾加 guard-allow 注释后重新提交。"
+TOTAL=$((HITS + KW_HITS))
+if [ "$TOTAL" -gt 0 ]; then
+  echo "::error::发现 $TOTAL 处敏感信息，本次不构建、不部署。"
+  echo "线上仍是上一次成功部署的内容，网站不会坏；只是这篇没上去。"
+  echo ""
+  echo "怎么解除："
+  if [ "$KW_HITS" -gt 0 ]; then
+    echo "  【客户名/内部代号】只有一条路：把上面那一行的词换掉。"
+    echo "    例：写成「某个中亚客户」「某台香薰机控制器」，不指认具体客户，然后 git push。"
+    echo "    别加 guard-allow——它只让扫描闭眼，词仍然发得出去。"
+    echo "    如果这个词其实是通用技术词（跟客户名撞车），本地改不了，联系管理员把它从词库删掉。"
+  fi
+  if [ "$HITS" -gt 0 ]; then
+    echo "  【邮箱/手机号/IP/凭据/私钥】真信息删掉或换成占位符（如 = <你的token>）；"
+    echo "    确属反面教材的教学示例，在该行末尾加 <!-- guard-allow --> 豁免。"
+  fi
   exit 1
 fi
 echo "✅ 未发现敏感信息"

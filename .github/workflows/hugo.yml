@@ -15,7 +15,23 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # 硬门禁：扫不过就不构建、不部署。失败模式是「新内容不出现」，不是「站点坏掉」，
+  # 因为 Pages 继续服务上一次成功部署的产物。
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 扫描敏感信息
+        env:
+          # 客户名 / 项目代号词库，英文逗号分隔。
+          # 只放在仓库 Settings → Secrets and variables → Actions 里，
+          # 绝不写进本文件——否则护栏自己就成了客户名单泄漏源。
+          GUARD_KEYWORDS: ${{ secrets.GUARD_KEYWORDS }}
+        run: bash .github/scripts/guard.sh
+
   build:
+    needs: guard
     runs-on: ubuntu-latest
     env:
       # 版本锁死：不跟随最新版，避免某天 Hugo 升级把站点搞坏

@@ -259,7 +259,7 @@ hugo server -D          # -D 表示连草稿一起显示
 | DNS 解析 | ✅ 已加，在**阿里云**（不在 Cloudflare）：`CNAME notes → imagrove.github.io`，TTL 600 |
 | 构建与线上访问 | ✅ 全路由 200，样式正常 |
 | **Enforce HTTPS** | ✅ 已开。证书签发后 GitHub 自动置为 enforced，`http://` 现在 301 跳 `https://`，产物里 `rel=canonical` 也是 https |
-| 协作者（维护者 Write 权限） | ⚠️ 待加 |
+| 协作者（维护者 Write 权限） | ⚠️ 已发邀请给 `L119601`（invitation id 345032820，权限 `push` = Write），**等他接受**。接受入口：https://github.com/imagrove/notes.imagrove.com/invitations 。邀请 7 天过期，过期后重发即可；imagrove 组未强制 2FA，不会卡他 |
 | Hugo 版本锁 | `0.152.2`，写死在 `hugo.yml` 的 `HUGO_VERSION`，与本机一致 |
 | PaperMod 兼容性补丁 | ⚠️ 技术债。主题 v8.0 对本机 Hugo 0.152.2 有两处不兼容，已手改进仓库：3 个 `layouts/partials/templates/*.html` 去掉多余的 `partials/` 前缀；`opengraph.html` / `twitter_cards.html` 删掉已被移除的 `site.Social` 分支。**将来 Hugo 升到 0.158+ 时可换回官方原版主题** |
 | 主题引入方式 | vendor 进仓库（无 submodule、无 `.git`），构建不依赖外网 |

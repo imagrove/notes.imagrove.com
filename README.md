@@ -271,11 +271,17 @@ hugo server -D          # -D 表示连草稿一起显示
 
 > 阿里云云解析本身不做代理，所以没有橙云/灰云开关。但这个 zone 将来要迁 Cloudflare（NS 现在还指向 `dns13/dns14.hichina.com`），**迁过去时 `notes` 这条必须保持灰云（仅 DNS）**：橙云会代理回源 `imagrove.github.io`，然后被 301 跳到 `notes.imagrove.com` 形成绕圈，页面直接坏。
 
-**客户名词库维护**：已配 Settings → Secrets → `GUARD_KEYWORDS`（英文逗号分隔）。新成交客户要加词时，名单**绝不写进仓库任何文件**（这是 public 仓库，护栏自己不能变成客户名单泄漏源），只更新 Secret：
+**客户名词库维护**：已配 Settings → Secrets → `GUARD_KEYWORDS`（英文逗号分隔，17 词）。Secret 是**只写不读**的，写进去就再也拉不回来，所以词表的权威副本存在管理员本机：
+
+```
+~/.config/credentials/guard-keywords.imagrove.txt   （权限 600，无尾换行，与 Secret 逐字节一致）
+```
+
+新成交客户要加词时，先改这个文件，再同步进 Secret。名单**绝不写进仓库任何文件**（这是 public 仓库，护栏自己不能变成客户名单泄漏源）：
 
 ```bash
-# 在管理员机器上，词表存本地文件后走 stdin
-gh secret set GUARD_KEYWORDS --repo imagrove/notes.imagrove.com < 词表.txt
+# 改完文件后，从权威文件直接重设
+gh secret set GUARD_KEYWORDS --repo imagrove/notes.imagrove.com < ~/.config/credentials/guard-keywords.imagrove.txt
 ```
 
 收词规则：只收**拉丁字母标识符**（客户品牌名、公司名、内部产品代号）。纯中文词（如“香薰机控制器”）不收——铁律一本来就允许写“某个客户的香薰机控制器项目”，拦它就是把护栏变成捣乱工具。

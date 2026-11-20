@@ -191,18 +191,21 @@ token：      <你的token>
 | `hugo.yml` | 构建站点 | 构建失败会标红，日志指出第几行出错 |
 | `guard.yml` | 扫敏感信息 | 命中邮箱/手机号/内网 IP/凭据/客户名库就标红 |
 
+客户名库已配在 Secrets 的 `GUARD_KEYWORDS`（2026-11-20 配，17 词：客户品牌/公司名 + 内部产品代号）。匹配方式是**字面量、忽略大小写**，所以把客户名写成全小写也拦得住。
+
 护栏命中但确实是教学示例的，在该行末尾加注释豁免：
 
 ```cpp
 // 反面教材：password=123456 绝对不能这么写 <!-- guard-allow -->
 ```
 
-本地先跑（可选，带客户名库一起扫）：
+本地先跑（可选）：
 
 ```bash
 bash .github/scripts/guard.sh
-GUARD_KEYWORDS="客户A,客户B" bash .github/scripts/guard.sh
 ```
+
+要理解一个局限：**客户名词库只在线上生效**。那份名单存在 GitHub Secrets 里，不在仓库里（它自己不能成为泄漏源），所以你本地跑 `guard.sh` 只能拦住邮箱、手机号、IP、私钥、凭据这类正则能扫的东西；**客户公司名与项目代号得靠 CI 拦，也就是 push 之后才看得见**。所以推完记得去 Actions 看一眼，别以为没报错就是过了。
 
 ---
 
@@ -268,4 +271,11 @@ hugo server -D          # -D 表示连草稿一起显示
 
 > 阿里云云解析本身不做代理，所以没有橙云/灰云开关。但这个 zone 将来要迁 Cloudflare（NS 现在还指向 `dns13/dns14.hichina.com`），**迁过去时 `notes` 这条必须保持灰云（仅 DNS）**：橙云会代理回源 `imagrove.github.io`，然后被 301 跳到 `notes.imagrove.com` 形成绕圈，页面直接坏。
 
-**可选**：Settings → Secrets → `GUARD_KEYWORDS` 填客户名/项目代号（英文逗号分隔），护栏会额外扫这些词。**不要硬编码进仓库**——这是个 public 仓库，护栏自己不能成为泄漏源。
+**客户名词库维护**：已配 Settings → Secrets → `GUARD_KEYWORDS`（英文逗号分隔）。新成交客户要加词时，名单**绝不写进仓库任何文件**（这是 public 仓库，护栏自己不能变成客户名单泄漏源），只更新 Secret：
+
+```bash
+# 在管理员机器上，词表存本地文件后走 stdin
+gh secret set GUARD_KEYWORDS --repo imagrove/notes.imagrove.com < 词表.txt
+```
+
+收词规则：只收**拉丁字母标识符**（客户品牌名、公司名、内部产品代号）。纯中文词（如“香薰机控制器”）不收——铁律一本来就允许写“某个客户的香薰机控制器项目”，拦它就是把护栏变成捣乱工具。

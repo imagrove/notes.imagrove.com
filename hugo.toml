@@ -27,6 +27,10 @@ enableRobotsTXT = true
   ShowBreadCrumbs = false
   ShowShareButtons = false
 
+  # 文章页底部评论区（Giscus），开关在这里；文章想单独关掉就在那篇 frontmatter 写 comments: false
+  # 留言存在公开仓 imagrove/notes-community 的 Discussions 里，实现见 layouts/partials/comments.html
+  comments = true
+
   [params.homeInfoParams]
     Title = "从零到固件"
     Content = "一个人把嵌入式学明白的全过程。Arduino、ESP32、PlatformIO、ESP-IDF，包括每一个真实的坑。"

@@ -26,10 +26,11 @@ templates/日志模板.md  ← 每次复制这个开始写
 下面这些**不用你动**（动了也不会坏，只是没必要）：
 
 ```
-hugo.toml             站点配置（站名、导航、首页文案）
-themes/PaperMod/      外观主题
-.github/workflows/    自动部署
-.github/scripts/      提交前的自动检查
+hugo.toml                        站点配置（站名、导航、首页文案）
+themes/PaperMod/                 外观主题
+layouts/partials/comments.html   文章页底部的评论区（提示文字想改就改这个文件）
+.github/workflows/               自动部署
+.github/scripts/                 提交前的自动检查
 ```
 
 新文章直接丢进 `content/posts/`，**不需要改任何配置，也不需要挑目录**。这个站没有分类文件夹，只有时间线——放哪都不算放错。
@@ -76,6 +77,8 @@ git push                                             # ⑤
 ① 那步是最容易翻车的地方：你在网页上改过东西、或者另一台机器提交过，不先拉就直接 push 会被拒绝（`non-fast-forward`）。养成动笔前先 `git pull --rebase` 的习惯，就不会遇到。
 
 **文件名会变成网址**，所以用英文小写加短横线：`first-day-arduino.md` → `/posts/first-day-arduino/`。用中文也能跑通，但网址会变成一串 `%E7%AC%AC...`，不好复制也不好分享。
+
+**文章发出去以后别再改文件名。** 评论区是按网址对应留言的（`/posts/first-day-arduino/` 这一页 ↔ 那一条讨论串），改了名等于换了一个新页面：旧留言留在原来那条串里看不到，新页面评论区是空的。写错了要改内容，直接编辑文件，名字不动。
 
 **文章顺序由 frontmatter 里的 `date` 决定，跟文件名无关。** 不需要在文件名前面加日期。
 
@@ -232,9 +235,27 @@ hugo server -D          # -D 表示连草稿一起显示
 # 打开 http://localhost:1313
 ```
 
-装的时候注意：本机和线上都锁在 **Hugo 0.152.2**，`brew install hugo` 装的是最新版（比它新），日常写文章没问题，但如果本地能跑、线上构建失败，先怀疑版本差。找管理员处理。
+装的时候注意：`brew install hugo` 装的是最新版（本机现在已经是 **0.170.1**），而线上构建锁在 **Hugo 0.152.2**（写死在 `.github/workflows/hugo.yml` 的 `HUGO_VERSION`）。也就是说本地预览和线上产物不是同一个 Hugo 构建出来的。日常写文章没问题，但**本地能跑、线上构建失败**时，先怀疑这个版本差。找管理员处理，别自己去改 workflow 里的版本号——线上版本是和管理员本机一起对齐的，动了要连 PaperMod 的兼容性补丁一起重验。
 
 不装 Hugo 也完全不影响你写作——线上构建出来的效果就是最终效果。
+
+---
+
+## 10. 读者反馈在哪看
+
+每篇文章下面都有一个评论区。读者用 GitHub 账号登录后留言，问的是「这一步我卡住了」「你这个报错我也遇到了」。
+
+**留言不在这个仓库里**，在评论区专用仓 [`imagrove/notes-community`](https://github.com/imagrove/notes-community) 的 **Discussions** 标签页。想收今天的反馈，去那一个页面看，不用在文章之间翻。
+
+有人回复了你的评论区，GitHub 会在你登录 `notes-community` 后通过右上角铃铛和邮件通知你——所以**第一次去把那个仓库点 Watch（Ignore 以外的档）**，否则留言你看不见。
+
+处理动作只有三种：
+
+- 读者说的坑你能改 → 改文章正文，再写一篇「这个坑我更新了」没意义，直接原地改
+- 读者问的你也答不上来 → 这条就是下周该做的事，记进你自己的待办
+- 单纯骂一句 / 广告 → 不用管，也不用来删（留言在那个仓库里，你没有它的管理权限，也不该有）
+
+一篇不想开评论区的文章，在它开头的字段里加一行 `comments: false`。全站开关在 `hugo.toml` 的 `params.comments`，改成 `false` 就是所有文章都不出评论区——这行归管理员管。
 
 ---
 
@@ -280,6 +301,7 @@ hugo server -D          # -D 表示连草稿一起显示
 | PaperMod 兼容性补丁 | ⚠️ 技术债。主题 v8.0 对本机 Hugo 0.152.2 有两处不兼容，已手改进仓库：3 个 `layouts/partials/templates/*.html` 去掉多余的 `partials/` 前缀；`opengraph.html` / `twitter_cards.html` 删掉已被移除的 `site.Social` 分支。**将来 Hugo 升到 0.158+ 时可换回官方原版主题** |
 | 主题引入方式 | vendor 进仓库（无 submodule、无 `.git`），构建不依赖外网 |
 | **脱敏硬门禁** | ✅ 2026-11-20 并入 `hugo.yml` 作首个 job（`build: needs: guard` → `deploy: needs: build`），独立的 `guard.yml` 已删除（免得每次 push 扫两遍）。已用临时私有仓实测：`guard` 失败时 `build` 与 `deploy` 均为 `skipped`，不会把带敏感词的内容发出去 |
+| **评论区（Giscus）** | ✅ 2026-11-24 接入，与 drone / tutorial 站同构。宿主仓 `imagrove/notes-community`（Public 空仓，Issues + Discussions 都开，只用 General 分类）；实现只在 `layouts/partials/comments.html`（主题 `single.html` 自带 `comments` 钩子，未改主题）+ `hugo.toml` 的 `params.comments = true`。`data-mapping=pathname`、界面语言 `zh-CN`、明暗主题跟随站点的 `body.dark`、点「加载评论区」才加载 iframe。只有 `.Section == "posts"` 出评论区，关于页/归档页/标签页不挂。写死在 partial 里的两个 id：repo `R_kgDOV4_iNw`、category `DIC_kwDOV4_iN84DLzi0`（换宿主仓才要动，取法见 partial 头部注释） |
 
 要改域名时，四处必须同步（缺一会出现页面能开但链接跳回旧域名）：`hugo.toml` 的 `baseURL`（结尾斜杠不能少）、`static/CNAME`、Pages 面板的 Custom domain、DNS 记录。改完重跑一次构建，确认产物里 `rel=canonical` 已是新域名。
 

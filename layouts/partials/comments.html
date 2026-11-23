@@ -1,0 +1,116 @@
+{{- /*
+文章页评论区（Giscus）。数据宿主是公开仓 imagrove/notes-community 的 Discussions（General 分类），
+与 tutorial / drone 站同构：读者用 GitHub 账号登录留言，评论不落在本站内容仓库里。
+只有 /posts/ 下的文章会显示，关于页、归档页、标签页都不出。
+单个文章想关掉评论区，在 frontmatter 加 comments: false（主题会跳过本文件）。
+下面四个值取自 GitHub，换宿主仓才需要改：
+  gh api graphql -f query='query{r:repository(owner:"imagrove",name:"notes-community"){id discussionCategories(first:10){nodes{name id}}}}'
+*/ -}}
+{{- if eq .Section "posts" -}}
+<section class="giscus-section" aria-labelledby="giscus-title">
+    <h2 id="giscus-title">这一篇没跑通，或者有疑问？</h2>
+    <p class="giscus-hint">用 GitHub 账号登录后即可留言。写清楚卡在哪一步、报了什么错，我们会核实并更新文章。</p>
+    <div class="giscus-host" data-giscus-host>
+        <button class="giscus-load-btn" data-giscus-load-btn>加载评论区</button>
+    </div>
+</section>
+
+<style>
+    .giscus-section {
+        margin-top: 2.5rem;
+        padding-top: 2rem;
+        border-top: 1px dashed var(--border-color);
+    }
+
+    .giscus-section h2 {
+        font-size: 1.25rem;
+        margin: 0 0 .5rem;
+    }
+
+    .giscus-hint {
+        margin: 0 0 1.25rem;
+        font-size: .9rem;
+        color: var(--secondary);
+    }
+
+    .giscus-host {
+        min-height: 120px;
+    }
+
+    .giscus-load-btn {
+        display: inline-block;
+        padding: .5rem 1.1rem;
+        font-size: .875rem;
+        font-weight: 500;
+        color: var(--theme);
+        background: var(--primary);
+        border: 1px solid var(--primary);
+        border-radius: .375rem;
+        cursor: pointer;
+    }
+
+    .giscus-load-btn:hover {
+        background: transparent;
+        color: var(--primary);
+    }
+</style>
+
+<script>
+    (function () {
+        var REPO = 'imagrove/notes-community';
+        var REPO_ID = 'R_kgDOV4_iNw';
+        var CATEGORY = 'General';
+        var CATEGORY_ID = 'DIC_kwDOV4_iN84DLzi0';
+
+        var host = document.querySelector('[data-giscus-host]');
+        var btn = document.querySelector('[data-giscus-load-btn]');
+        if (!host || !btn) return;
+
+        // PaperMod 的暗色模式是往 body 上加 .dark 类
+        var currentTheme = function () {
+            return document.body.classList.contains('dark') ? 'dark' : 'light';
+        };
+
+        btn.addEventListener('click', function () {
+            btn.remove();
+
+            var script = document.createElement('script');
+            script.src = 'https://giscus.app/client.js';
+            script.async = true;
+            script.crossOrigin = 'anonymous';
+
+            var attrs = {
+                'data-repo': REPO,
+                'data-repo-id': REPO_ID,
+                'data-category': CATEGORY,
+                'data-category-id': CATEGORY_ID,
+                // 按页面路径对应讨论串：改文章文件名会让评论串断掉，所以文件名定下就别动
+                'data-mapping': 'pathname',
+                'data-strict': '0',
+                'data-reactions-enabled': '1',
+                'data-emit-metadata': '0',
+                'data-input-position': 'top',
+                'data-theme': currentTheme(),
+                'data-lang': 'zh-CN',
+                'data-loading': 'lazy',
+            };
+            for (var key in attrs) script.setAttribute(key, attrs[key]);
+            host.appendChild(script);
+
+            // 读者切换明暗主题时，同步已加载的评论区
+            var syncTheme = function () {
+                var frame = document.querySelector('iframe.giscus-frame');
+                if (!frame || !frame.contentWindow) return;
+                frame.contentWindow.postMessage(
+                    { giscus: { setConfig: { theme: currentTheme() } } },
+                    'https://giscus.app'
+                );
+            };
+            new MutationObserver(syncTheme).observe(document.body, {
+                attributes: true,
+                attributeFilter: ['class'],
+            });
+        });
+    })();
+</script>
+{{- end -}}

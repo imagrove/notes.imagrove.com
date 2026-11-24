@@ -1,6 +1,7 @@
 ---
 title: "在 Trae 下用 ESP-IDF 创建并编译 ESP32-S3 测试工程"
-date: 2026-11-24
+date: 2026-11-24  
+weight: 5
 draft: false
 author: "吕绪帆"
 description: "在 Trae 下用 ESP-IDF 创建并编译 ESP32-S3 测试工程"
